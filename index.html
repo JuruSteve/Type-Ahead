@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>AJAX Type Ahead</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <h2>1000 Largest US Cities By Population With Geographic Coordinates</h2>
+    
+    <div class="form-container">
+        <div class="searchBox">
+            <form class="search-form">
+                <input type="text" class="search">
+                <ul class="results">
+                    <li>Search by City</li>
+                    <li>Or by State</li>
+                </ul>
+            </form>
+        </div>
+    </div>
+
+<script>
+    const cities = [];
+    const endpoint = "https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json";
+    fetch(endpoint)
+        .then(res => res.json())
+        .then(data => cities.push(...data));
+
+    function findMatches(wordToMatch, cities){
+        return cities.filter(place => {
+            // Find out if City and State match with the search input
+            const regex = new RegExp(wordToMatch, 'gi');
+            return place.city.match(regex) || place.state.match(regex);
+        });
+    }
+    // Add commas in the population value
+    function numberWithCommas(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    function showMatches(){
+        const matchArray = findMatches(this.value, cities);
+        const html = matchArray.map(place => {
+            const regex = new RegExp(this.value, 'gi');
+            const cityName = place.city.replace(regex, `<span class="hl">${this.value}</span>`)
+            const stateName = place.state.replace(regex, `<span class="hl">${this.value}</span>`)
+            return `
+                <li>
+                    <span class="name">${cityName}, ${stateName}</span>
+                    <span class="population">${place.population}</span>
+                </li>
+            `;
+        }).join('');
+        results.innerHTML = html;
+    }
+
+    const searchInput = document.querySelector('.search');
+    const results = document.querySelector('.results');
+    
+    searchInput.addEventListener('change', showMatches);
+    searchInput.addEventListener('keyup', showMatches);
+
+</script>
+
+</body>
+</html>
